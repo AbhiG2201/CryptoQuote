@@ -1,0 +1,517 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Daily Cryptoquote</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow puzzle sheet. The cipher grid is the hero; controls and keys sit directly under it. */
+:root {
+  --bg: #E8ECEF;
+  --sheet: #F6F8F9;
+  --ink: #0D1922;
+  --muted: #566772;
+  --rule: #C3CDD4;
+  --accent: #2B4FD8;
+  --on-accent: #FFFFFF;
+  --accent-soft: #DAE2FB;
+  --ok: #1B7A4B;
+  --ok-soft: #D5EEDF;
+  --bad: #BF3328;
+  --bad-soft: #F6DAD6;
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  --cw: clamp(21px, 6.2vw, 34px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1218; --sheet: #121C25; --ink: #E7EDF1; --muted: #8FA1AD; --rule: #2B3A46;
+    --accent: #8CA9FF; --on-accent: #0B1218; --accent-soft: #1E2C54;
+    --ok: #58C98C; --ok-soft: #14352A; --bad: #FF8B7E; --bad-soft: #40201C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1218; --sheet: #121C25; --ink: #E7EDF1; --muted: #8FA1AD; --rule: #2B3A46;
+  --accent: #8CA9FF; --on-accent: #0B1218; --accent-soft: #1E2C54;
+  --ok: #58C98C; --ok-soft: #14352A; --bad: #FF8B7E; --bad-soft: #40201C;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.eyebrow { margin: 0 0 2px; font: 500 12px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font: 800 clamp(30px, 8vw, 40px)/1 var(--font-display); letter-spacing: -.02em; text-wrap: balance; }
+.pager { display: flex; gap: 6px; }
+.pager button {
+  border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px;
+  padding: 7px 12px; font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.pager button:disabled { opacity: .4; cursor: default; }
+
+.how { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 8px 0; font-size: 14px; color: var(--muted); }
+.how summary { cursor: pointer; font-weight: 500; color: var(--ink); }
+.how p { margin: 8px 0 0; max-width: 62ch; }
+
+.board { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 22px 14px 16px; }
+.quote { display: flex; flex-wrap: wrap; gap: 20px 16px; }
+.word { display: flex; align-items: flex-end; gap: 2px; white-space: nowrap; }
+.cell {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  width: var(--cw); display: flex; flex-direction: column; align-items: center; padding: 2px 0 0; border-radius: 3px;
+}
+.cell .c { font: 500 11px/1 var(--font-mono); color: var(--muted); padding-bottom: 3px; }
+.cell .g {
+  width: 100%; height: calc(var(--cw) * 1.25); min-height: 28px;
+  display: grid; place-items: center;
+  font: 600 clamp(16px, 4.6vw, 22px)/1 var(--font-mono);
+  border-bottom: 2px solid var(--ink);
+}
+.cell.same { background: var(--accent-soft); }
+.cell.locked .g { color: var(--accent); }
+.cell.wrong .g { color: var(--bad); background: var(--bad-soft); border-bottom-color: var(--bad); }
+.quote.solved .cell .g { color: var(--ok); border-bottom-color: var(--ok); }
+.quote.solved .cell .c { color: var(--ok); }
+.p { font: 600 clamp(16px, 4.6vw, 22px)/1 var(--font-mono); padding: 0 1px 6px; }
+.by { margin: 18px 0 0; font-size: 14px; color: var(--muted); }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.stat { display: flex; flex-direction: column; min-width: 0; }
+.stat .k { font: 500 11px/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font: 600 20px/1.2 var(--font-mono); font-variant-numeric: tabular-nums; }
+.spacer { flex: 1 1 0; }
+.btn {
+  border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px;
+  padding: 10px 16px; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.msg { min-height: 1.5em; margin: -4px 0 0; font-size: 14px; color: var(--muted); }
+
+.kb { display: grid; gap: 6px; }
+.row { display: flex; gap: 5px; justify-content: center; }
+.key {
+  flex: 1 1 0; max-width: 46px; height: 48px; min-width: 0; padding: 0;
+  border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px;
+  font: 600 16px var(--font-mono); cursor: pointer;
+}
+.key.used { opacity: .38; }
+.key.wide { flex: 1.8 1 0; max-width: 84px; font: 600 13px var(--font-body); }
+.key:active { background: var(--accent-soft); }
+
+.result { background: var(--sheet); border: 1px solid var(--accent); border-radius: 6px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; }
+.result h2 { margin: 0; font: 800 26px/1.1 var(--font-display); letter-spacing: -.01em; }
+.result p { margin: 0; font-size: 14px; color: var(--muted); max-width: 60ch; }
+.result textarea {
+  width: 100%; resize: none; border: 1px solid var(--rule); border-radius: 6px;
+  background: var(--bg); color: var(--ink); padding: 10px 12px; font: 500 16px/1.5 var(--font-mono);
+}
+.result .actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+@media (prefers-reduced-motion: no-preference) {
+  .cell, .key, .btn { transition: background-color .12s ease; }
+}
+</style>
+
+<main class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Puzzle <span id="num">1</span> · <span id="date"></span></p>
+      <h1>Daily Cryptoquote</h1>
+    </div>
+    <nav class="pager" aria-label="Puzzle navigation">
+      <button type="button" id="prev">Earlier</button>
+      <button type="button" id="next">Later</button>
+    </nav>
+  </header>
+
+  <details class="how">
+    <summary>How to play</summary>
+    <p>Every letter in the quote has been swapped for another, and the swap is the same all the way through. If K stands for T once, it stands for T everywhere. No letter stands for itself. Tap a cell to pick its cipher letter, then tap the letter you think it really is. One-letter words and double letters are good places to start.</p>
+    <p>A hint locks in one letter. A check marks your wrong guesses in red. Both count against your score when you share it.</p>
+  </details>
+
+  <section class="board" aria-label="Puzzle">
+    <div id="quote" class="quote"></div>
+    <p class="by" id="by"></p>
+  </section>
+
+  <div class="bar">
+    <div class="stat"><span class="k">Time</span><span class="v" id="time">0:00</span></div>
+    <div class="stat"><span class="k">Hints</span><span class="v" id="hints">0</span></div>
+    <div class="stat"><span class="k">Checks</span><span class="v" id="checks">0</span></div>
+    <span class="spacer"></span>
+    <button type="button" class="btn" id="hint">Hint</button>
+    <button type="button" class="btn primary" id="check">Check</button>
+  </div>
+  <p class="msg" id="msg" aria-live="polite"></p>
+
+  <div class="kb" id="kb" aria-label="Letters"></div>
+
+  <section class="result" id="result" hidden>
+    <h2 id="rtitle">Solved</h2>
+    <p>Copy this and paste it into your group text. It shows your time and how much help you used, and gives nothing away.</p>
+    <textarea id="share" rows="3" readonly aria-label="Result to share"></textarea>
+    <div class="actions">
+      <button type="button" class="btn primary" id="copy">Copy result</button>
+      <span id="streak" class="msg" style="margin:0"></span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var QUOTES = [
+    ["The only thing we have to fear is fear itself.", "Franklin D. Roosevelt"],
+    ["Ask not what your country can do for you; ask what you can do for your country.", "John F. Kennedy"],
+    ["Injustice anywhere is a threat to justice everywhere.", "Martin Luther King Jr."],
+    ["Well done is better than well said.", "Benjamin Franklin"],
+    ["Early to bed and early to rise makes a man healthy, wealthy, and wise.", "Benjamin Franklin"],
+    ["An investment in knowledge pays the best interest.", "Benjamin Franklin"],
+    ["Genius is one percent inspiration and ninety-nine percent perspiration.", "Thomas Edison"],
+    ["Imagination is more important than knowledge.", "Albert Einstein"],
+    ["The best way to predict the future is to invent it.", "Alan Kay"],
+    ["The only way to do great work is to love what you do.", "Steve Jobs"],
+    ["That which does not kill us makes us stronger.", "Friedrich Nietzsche"],
+    ["The journey of a thousand miles begins with a single step.", "Lao Tzu"],
+    ["The unexamined life is not worth living.", "Socrates"],
+    ["Whether you think you can or you think you can't, you're right.", "Henry Ford"],
+    ["Nothing in life is to be feared, it is only to be understood.", "Marie Curie"],
+    ["It always seems impossible until it's done.", "Nelson Mandela"],
+    ["Government of the people, by the people, for the people, shall not perish from the earth.", "Abraham Lincoln"],
+    ["Give me liberty, or give me death!", "Patrick Henry"],
+    ["We hold these truths to be self-evident, that all men are created equal.", "Thomas Jefferson"],
+    ["Float like a butterfly, sting like a bee.", "Muhammad Ali"],
+    ["Never in the field of human conflict was so much owed by so many to so few.", "Winston Churchill"],
+    ["Nothing will work unless you do.", "Maya Angelou"],
+    ["If I have seen further, it is by standing on the shoulders of giants.", "Isaac Newton"],
+    ["Without music, life would be a mistake.", "Friedrich Nietzsche"],
+    ["Not everything that counts can be counted, and not everything that can be counted counts.", "William Bruce Cameron"],
+    ["A bird in the hand is worth two in the bush.", "Proverb"],
+    ["Too many cooks spoil the broth.", "Proverb"],
+    ["You can't judge a book by its cover.", "Proverb"],
+    ["The grass is always greener on the other side of the fence.", "Proverb"],
+    ["Don't put all your eggs in one basket.", "Proverb"],
+    ["A rolling stone gathers no moss.", "Proverb"],
+    ["The pen is mightier than the sword.", "Edward Bulwer-Lytton"]
+  ];
+  var START = Date.UTC(2026, 10, 11); // Puzzle 1
+
+  function rng(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function shuffle(arr, r) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(r() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  var ORDER = shuffle(QUOTES.map(function (_, i) { return i; }), rng(20261111));
+
+  function todayN() {
+    var d = new Date();
+    var u = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.max(1, Math.floor((u - START) / 864e5) + 1);
+  }
+  function makeCipher(seed) {
+    var r = rng(seed), p, ok;
+    do {
+      p = shuffle(ALPHA.split(''), r);
+      ok = p.every(function (c, i) { return c !== ALPHA[i]; });
+    } while (!ok);
+    var enc = {}, dec = {};
+    ALPHA.split('').forEach(function (l, i) { enc[l] = p[i]; dec[p[i]] = l; });
+    return { enc: enc, dec: dec };
+  }
+
+  function $(id) { return document.getElementById(id); }
+  var quoteEl = $('quote'), msgEl = $('msg');
+  var n, text, author, enc, dec, st, sel = null, selIdx = -1, cells = [], keyEls = {};
+  var running = false, last = 0, ticks = 0;
+
+  function key(k) { return 'cq-daily:' + k; }
+  function loadState(k) {
+    try { var s = localStorage.getItem(key(k)); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(key(n), JSON.stringify(st)); } catch (e) {} }
+  function say(t) { msgEl.textContent = t || ''; }
+
+  function fmt(ms) {
+    var s = Math.floor(ms / 1000), m = Math.floor(s / 60);
+    return m + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function build() {
+    quoteEl.innerHTML = '';
+    cells = [];
+    var word = null;
+    function flush() { if (word) { quoteEl.appendChild(word); word = null; } }
+    Array.from(text).forEach(function (ch) {
+      if (ch === ' ') { flush(); return; }
+      if (!word) { word = document.createElement('span'); word.className = 'word'; }
+      var U = ch.toUpperCase();
+      if (ALPHA.indexOf(U) > -1 && U.length === 1) {
+        var c = enc[U];
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cell';
+        b.dataset.c = c;
+        var top = document.createElement('span'); top.className = 'c'; top.textContent = c;
+        var g = document.createElement('span'); g.className = 'g';
+        b.appendChild(top); b.appendChild(g);
+        b.addEventListener('click', function () { selIdx = cells.indexOf(b); select(c); });
+        cells.push(b);
+        word.appendChild(b);
+      } else {
+        var s = document.createElement('span'); s.className = 'p'; s.textContent = ch;
+        word.appendChild(s);
+      }
+    });
+    flush();
+  }
+
+  function usedPlain() {
+    var u = {};
+    Object.keys(st.guess).forEach(function (c) { if (st.guess[c]) u[st.guess[c]] = true; });
+    return u;
+  }
+
+  function paint() {
+    cells.forEach(function (b) {
+      var c = b.dataset.c, g = st.guess[c] || '';
+      b.querySelector('.g').textContent = g;
+      b.classList.toggle('same', sel === c);
+      b.classList.toggle('locked', !!st.locked[c]);
+      b.classList.toggle('wrong', !!st.wrong[c]);
+      b.setAttribute('aria-label', 'Cipher ' + c + ', ' + (g ? 'guess ' + g : 'empty') + (st.locked[c] ? ', hint' : ''));
+    });
+    quoteEl.classList.toggle('solved', st.solved);
+    var u = usedPlain();
+    Object.keys(keyEls).forEach(function (l) { keyEls[l].classList.toggle('used', !!u[l]); });
+    $('hints').textContent = st.hints;
+    $('checks').textContent = st.checks;
+    $('time').textContent = fmt(st.elapsed);
+    $('hint').disabled = st.solved;
+    $('check').disabled = st.solved;
+    $('result').hidden = !st.solved;
+    if (st.solved) renderResult();
+  }
+
+  function select(c) { sel = c; startTimer(); say(''); paint(); }
+
+  function startTimer() {
+    if (!running && !st.solved) { running = true; last = Date.now(); }
+  }
+
+  function assign(L) {
+    if (!sel || st.solved) { if (!sel) say('Tap a cell first.'); return; }
+    if (st.locked[sel]) { say('That letter was set by a hint.'); return; }
+    var clash = Object.keys(st.locked).some(function (c) { return st.guess[c] === L; });
+    if (clash) { say(L + ' is already placed by a hint.'); return; }
+    Object.keys(st.guess).forEach(function (c) {
+      if (c !== sel && st.guess[c] === L && !st.locked[c]) { delete st.guess[c]; delete st.wrong[c]; }
+    });
+    st.guess[sel] = L;
+    delete st.wrong[sel];
+    startTimer(); say('');
+    afterChange();
+  }
+
+  function clearSel() {
+    if (!sel || st.solved) return;
+    if (st.locked[sel]) { say('That letter was set by a hint.'); return; }
+    delete st.guess[sel]; delete st.wrong[sel];
+    afterChange();
+  }
+
+  function isSolved() {
+    return Object.keys(dec).every(function (c) {
+      return text.toUpperCase().indexOf(dec[c]) === -1 || st.guess[c] === dec[c];
+    });
+  }
+
+  function afterChange() {
+    if (isSolved()) {
+      st.solved = true; running = false; sel = null;
+      save(); paint();
+      return;
+    }
+    save(); paint();
+  }
+
+  function present() {
+    var s = {};
+    Array.from(text.toUpperCase()).forEach(function (ch) { if (ALPHA.indexOf(ch) > -1) s[enc[ch]] = (s[enc[ch]] || 0) + 1; });
+    return s;
+  }
+
+  function hint() {
+    if (st.solved) return;
+    var freq = present(), target = null;
+    if (sel && !st.locked[sel] && st.guess[sel] !== dec[sel]) target = sel;
+    else {
+      var open = Object.keys(freq).filter(function (c) { return !st.locked[c] && st.guess[c] !== dec[c]; });
+      open.sort(function (a, b) { return freq[b] - freq[a]; });
+      target = open[0] || null;
+    }
+    if (!target) { say('Nothing left to reveal.'); return; }
+    var L = dec[target];
+    Object.keys(st.guess).forEach(function (c) {
+      if (c !== target && st.guess[c] === L && !st.locked[c]) { delete st.guess[c]; delete st.wrong[c]; }
+    });
+    st.guess[target] = L; st.locked[target] = true; delete st.wrong[target];
+    st.hints++; sel = target; startTimer();
+    say(target + ' is ' + L + '.');
+    var i = cells.findIndex(function (b) { return b.dataset.c === target; }); if (i > -1) selIdx = i;
+    afterChange();
+  }
+
+  function check() {
+    if (st.solved) return;
+    var guessed = Object.keys(st.guess).filter(function (c) { return st.guess[c]; });
+    if (!guessed.length) { say('Nothing to check yet.'); return; }
+    var bad = guessed.filter(function (c) { return st.guess[c] !== dec[c]; });
+    st.wrong = {};
+    bad.forEach(function (c) { st.wrong[c] = true; });
+    st.checks++; startTimer();
+    say(bad.length ? bad.length + (bad.length === 1 ? ' letter is' : ' letters are') + ' off.' : 'Everything placed so far is right.');
+    save(); paint();
+  }
+
+  function stars() {
+    var h = st.hints + st.checks;
+    return h === 0 ? '★★★' : h <= 2 ? '★★☆' : '★☆☆';
+  }
+  function shareText() {
+    return 'Cryptoquote #' + n + ' ' + stars() + '\n' +
+      'Solved in ' + fmt(st.elapsed) + '\n' +
+      'Hints ' + st.hints + ' · Checks ' + st.checks;
+  }
+  function streak() {
+    var c = 0, k = todayN(), s0 = loadState(k);
+    if (!(s0 && s0.solved)) k--;
+    for (; k >= 1; k--) { var s = loadState(k); if (s && s.solved) c++; else break; }
+    return c;
+  }
+  function renderResult() {
+    $('rtitle').textContent = 'Solved in ' + fmt(st.elapsed);
+    $('share').value = shareText();
+    var s = streak();
+    $('streak').textContent = s > 1 ? s + ' puzzles in a row' : '';
+  }
+
+  function dateLabel(k) {
+    return new Date(START + (k - 1) * 864e5).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  }
+
+  function loadPuzzle(k) {
+    var max = todayN();
+    if (!(k >= 1 && k <= max)) k = max;
+    n = k;
+    var q = QUOTES[ORDER[(n - 1) % QUOTES.length]];
+    text = q[0]; author = q[1];
+    var c = makeCipher(n * 7919 + 13);
+    enc = c.enc; dec = c.dec;
+    var saved = loadState(n);
+    st = saved && saved.guess ? saved : { guess: {}, locked: {}, wrong: {}, hints: 0, checks: 0, elapsed: 0, solved: false };
+    sel = null; selIdx = -1; running = false; say('');
+    $('num').textContent = n;
+    $('date').textContent = dateLabel(n);
+    $('by').textContent = '— ' + (author === 'Proverb' ? 'An old proverb' : author);
+    $('prev').disabled = n <= 1;
+    $('next').disabled = n >= max;
+    build(); paint();
+  }
+
+  function go(k) {
+    try { location.hash = 'puzzle-' + k; } catch (e) {}
+    loadPuzzle(k);
+  }
+
+  function fromHash() {
+    var m = /^#puzzle-(\d+)$/.exec(location.hash || '');
+    return m ? parseInt(m[1], 10) : todayN();
+  }
+
+  // Keyboard
+  var rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+  var kb = $('kb');
+  rows.forEach(function (r, ri) {
+    var row = document.createElement('div'); row.className = 'row';
+    r.split('').forEach(function (l) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'key'; b.textContent = l;
+      b.addEventListener('click', function () { assign(l); });
+      keyEls[l] = b; row.appendChild(b);
+    });
+    if (ri === 2) {
+      var d = document.createElement('button');
+      d.type = 'button'; d.className = 'key wide'; d.textContent = 'Clear';
+      d.addEventListener('click', clearSel);
+      row.appendChild(d);
+    }
+    kb.appendChild(row);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target && e.target.tagName;
+    if (t === 'TEXTAREA' || t === 'INPUT') return;
+    var k = e.key;
+    if (/^[a-zA-Z]$/.test(k)) { assign(k.toUpperCase()); e.preventDefault(); }
+    else if (k === 'Backspace' || k === 'Delete') { clearSel(); e.preventDefault(); }
+    else if (k === 'ArrowRight' || k === 'ArrowLeft') {
+      if (!cells.length) return;
+      selIdx = selIdx < 0 ? 0 : (selIdx + (k === 'ArrowRight' ? 1 : -1) + cells.length) % cells.length;
+      select(cells[selIdx].dataset.c);
+      e.preventDefault();
+    }
+  });
+
+  $('hint').addEventListener('click', hint);
+  $('check').addEventListener('click', check);
+  $('prev').addEventListener('click', function () { go(n - 1); });
+  $('next').addEventListener('click', function () { go(n + 1); });
+  window.addEventListener('hashchange', function () { var k = fromHash(); if (k !== n) loadPuzzle(k); });
+
+  $('copy').addEventListener('click', function () {
+    var ta = $('share'), txt = ta.value;
+    function fallback() { ta.focus(); ta.select(); say('Press and hold the text to copy it.'); }
+    try {
+      navigator.clipboard.writeText(txt).then(function () { say('Copied. Paste it into your group text.'); }, fallback);
+    } catch (e) { fallback(); }
+  });
+
+  setInterval(function () {
+    if (!running || !st || st.solved) return;
+    var now = Date.now();
+    if (!document.hidden) st.elapsed += Math.min(now - last, 5000);
+    last = now;
+    $('time').textContent = fmt(st.elapsed);
+    if (++ticks % 5 === 0) save();
+  }, 1000);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) save(); else last = Date.now(); });
+
+  loadPuzzle(fromHash());
+})();
+</script>
+
+</body></html>
